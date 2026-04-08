@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/labs/flare/:path*",
+      "destination": "/:path*"
+    }
+  ]
+}
