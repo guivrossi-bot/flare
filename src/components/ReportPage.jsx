@@ -3,6 +3,7 @@ import { useLanguage, useUnit } from "../lib/contexts";
 import t from "../lib/translations";
 import { INDUSTRY_DEFAULTS, APP_CALC_MAP } from "../lib/calculators";
 import Footer from "./Footer";
+import { generatePDF } from "./ReportPDF";
 
 const APP_ICONS = {
   tankPlates: "🛢️",
@@ -176,7 +177,10 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
   const [visible, setVisible] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
+  const [refinery, setRefinery] = useState("");
+  const [country, setCountry] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
@@ -185,13 +189,26 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
       setError(lang === "en" ? "Please enter a valid email." : lang === "es" ? "Ingresa un correo válido." : "Digite um e-mail válido.");
       return;
     }
-    console.log("LEAD:", { name, email, company, totalSavings });
+    const userInfo = { name, email, role, company, refinery, country };
+    console.log("LEAD:", { ...userInfo, totalSavings });
+    generatePDF({ apps, calcData, unit, lang, userInfo });
     setSubmitted(true);
   };
 
   if (!visible) return null;
 
-  const inputStyle = { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,109,0,0.3)", borderRadius: "8px", padding: "10px 14px", color: "#e8f4f8", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit" };
+  const inputStyle = { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,109,0,0.3)", borderRadius: "8px", padding: "10px 14px", color: "#e8f4f8", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle = { fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" };
+
+  const labels = {
+    name:     { en: "Name", es: "Nombre", pt: "Nome" },
+    email:    { en: "Email *", es: "Correo *", pt: "E-mail *" },
+    role:     { en: "Role / Position", es: "Cargo / Posición", pt: "Cargo / Função" },
+    company:  { en: "Company", es: "Empresa", pt: "Empresa" },
+    refinery: { en: "Refinery / Site", es: "Refinería / Sitio", pt: "Refinaria / Unidade" },
+    country:  { en: "Country", es: "País", pt: "País" },
+  };
+  const ph = (key, fallback) => labels[key]?.[lang] || fallback;
 
   if (submitted) {
     return (
@@ -199,7 +216,7 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
         <span style={{ fontSize: "32px" }}>✅</span>
         <div>
           <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
-            {lang === "en" ? "Thanks! Share this tool with your team." : lang === "es" ? "¡Gracias! Comparte esta herramienta con tu equipo." : "Obrigado! Compartilhe esta ferramenta com sua equipe."}
+            {lang === "en" ? "Your PDF report is opening. Share this tool with your team!" : lang === "es" ? "¡Tu informe PDF se está abriendo. Comparte esta herramienta!" : "Seu relatório PDF está abrindo. Compartilhe esta ferramenta!"}
           </div>
           <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
             {lang === "en" && <span>Follow <a href={NEWSLETTER_URL} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Industrial Cutting Processes</a> for more insights.</span>}
@@ -213,36 +230,58 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
 
   return (
     <div style={{ margin: "0 0 24px", background: "linear-gradient(135deg, #100d00, #1a1500)", border: "1px solid var(--accent)", borderRadius: "var(--radius)", padding: "24px 28px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
         <div>
           <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
-            {lang === "en" ? "💾 Save your report" : lang === "es" ? "💾 Guarda tu informe" : "💾 Salve seu relatório"}
+            {lang === "en" ? "📄 Generate official report" : lang === "es" ? "📄 Generar informe oficial" : "📄 Gerar relatório oficial"}
           </div>
-          <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-            {lang === "en" ? `You found ${fmtCurrency(totalSavings)}/yr in potential savings.` : lang === "es" ? `Encontraste ${fmtCurrency(totalSavings)}/año en ahorros potenciales.` : `Você encontrou ${fmtCurrency(totalSavings)}/ano em economias potenciais.`}
+          <div style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px" }}>
+            {lang === "en"
+              ? `Get your branded ICL PDF report for ${fmtCurrency(totalSavings)}/yr in potential savings.`
+              : lang === "es"
+              ? `Obtén tu informe PDF oficial de ICL con ${fmtCurrency(totalSavings)}/año en ahorros potenciales.`
+              : `Gere seu relatório PDF oficial ICL com ${fmtCurrency(totalSavings)}/ano em economias potenciais.`}
           </div>
         </div>
         <button onClick={() => setVisible(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "18px", cursor: "pointer", padding: "0 4px", lineHeight: 1 }}>×</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "10px", alignItems: "end" }}>
+
+      {/* Row 1: Name, Role, Email */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
         <div>
-          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{lang === "en" ? "Name" : "Nombre"}</div>
-          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder={lang === "en" ? "Your name" : lang === "es" ? "Tu nombre" : "Seu nome"} />
+          <div style={labelStyle}>{ph("name", "Name")}</div>
+          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder={lang === "en" ? "Your full name" : lang === "es" ? "Nombre completo" : "Seu nome completo"} />
         </div>
         <div>
-          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{lang === "en" ? "Email *" : "Correo *"}</div>
-          <input style={inputStyle} type="email" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} placeholder={lang === "en" ? "your@email.com" : "tu@correo.com"} />
+          <div style={labelStyle}>{ph("role", "Role / Position")}</div>
+          <input style={inputStyle} value={role} onChange={(e) => setRole(e.target.value)} placeholder={lang === "en" ? "e.g. Maintenance Manager" : lang === "es" ? "p.ej. Gerente de Mantenimiento" : "ex. Gerente de Manutenção"} />
+        </div>
+        <div>
+          <div style={labelStyle}>{ph("email", "Email *")}</div>
+          <input style={inputStyle} type="email" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} placeholder={lang === "en" ? "your@email.com" : "seu@email.com"} />
           {error && <div style={{ fontSize: "11px", color: "#ff6b6b", marginTop: "4px" }}>{error}</div>}
         </div>
+      </div>
+
+      {/* Row 2: Company, Refinery, Country + Button */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "10px", alignItems: "end" }}>
         <div>
-          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{lang === "en" ? "Company" : "Empresa"}</div>
+          <div style={labelStyle}>{ph("company", "Company")}</div>
           <input style={inputStyle} value={company} onChange={(e) => setCompany(e.target.value)} placeholder={lang === "en" ? "Company name" : lang === "es" ? "Nombre empresa" : "Nome da empresa"} />
+        </div>
+        <div>
+          <div style={labelStyle}>{ph("refinery", "Refinery / Site")}</div>
+          <input style={inputStyle} value={refinery} onChange={(e) => setRefinery(e.target.value)} placeholder={lang === "en" ? "Refinery or site name" : lang === "es" ? "Nombre de la refinería" : "Nome da refinaria"} />
+        </div>
+        <div>
+          <div style={labelStyle}>{ph("country", "Country")}</div>
+          <input style={inputStyle} value={country} onChange={(e) => setCountry(e.target.value)} placeholder={lang === "en" ? "Country" : lang === "es" ? "País" : "País"} />
         </div>
         <button
           onClick={handleSubmit}
           style={{ background: "var(--accent)", color: "#000", border: "none", borderRadius: "8px", padding: "10px 20px", fontWeight: 700, fontSize: "13px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
         >
-          {lang === "en" ? "Save →" : lang === "es" ? "Guardar →" : "Salvar →"}
+          {lang === "en" ? "📄 Generate PDF" : lang === "es" ? "📄 Generar PDF" : "📄 Gerar PDF"}
         </button>
       </div>
     </div>
