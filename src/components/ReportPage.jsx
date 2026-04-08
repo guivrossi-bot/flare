@@ -4,6 +4,7 @@ import t from "../lib/translations";
 import { INDUSTRY_DEFAULTS, APP_CALC_MAP } from "../lib/calculators";
 import Footer from "./Footer";
 import { generatePDF } from "./ReportPDF";
+import { saveLead } from "../lib/supabase";
 
 const APP_ICONS = {
   tankPlates: "🛢️",
@@ -190,7 +191,14 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
       return;
     }
     const userInfo = { name, email, role, company, refinery, country };
-    console.log("LEAD:", { ...userInfo, totalSavings });
+    saveLead({
+      email,
+      first_name: name,
+      company,
+      source: 'flare',
+      recommended_process: apps.join(', '),
+      payload: { role, refinery, country, totalSavings, apps, lang, unit },
+    });
     generatePDF({ apps, calcData, unit, lang, userInfo });
     setSubmitted(true);
   };
