@@ -337,16 +337,6 @@ export default function ReportPage({ apps, calcData, onRestart }) {
           })}
         </div>
 
-        {/* Source note */}
-        <div style={{ padding: "14px 18px", background: "rgba(255,109,0,0.04)", border: "1px solid rgba(255,109,0,0.15)", borderRadius: "10px", fontSize: "12px", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>
-          <span style={{ fontWeight: 700, color: "var(--accent)" }}>
-            {lang === "en" ? "📋 Data source: " : lang === "es" ? "📋 Fuente de datos: " : "📋 Fonte de dados: "}
-          </span>
-          {lang === "en" && "Hypertherm Associates field study — Plasma Cutting Technology Applied to Maintenance Operations in Oil Refineries (Phase 1, 2024). Tests conducted at Petrobras RECAP, RPBC, and other Brazilian refineries."}
-          {lang === "es" && "Estudio de campo de Hypertherm Associates — Tecnología de Corte por Plasma Aplicada a Operaciones de Mantenimiento en Refinerías de Petróleo (Fase 1, 2024). Pruebas realizadas en refinerías de Petrobras."}
-          {lang === "pt" && "Estudo de campo da Hypertherm Associates — Tecnologia de Corte a Plasma Aplicada a Operações de Manutenção em Refinarias de Petróleo (Fase 1, 2024). Testes realizados nas refinarias RECAP, RPBC e outras da Petrobras."}
-        </div>
-
         <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-secondary" onClick={onRestart}>{tr.restart}</button>
           <a href={PROFILE_URL} target="_blank" rel="noreferrer" className="btn-primary" style={{ textDecoration: "none" }}>
