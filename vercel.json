@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/labs/flare/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/labs/flare/:path*", "destination": "/index.html" }
   ]
 }
