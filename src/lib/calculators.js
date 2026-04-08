@@ -37,7 +37,7 @@ export function calcNozzleRemoval(d) {
 
 // ─── BOILER SUPPORTS ─────────────────────────────────────────────────────────
 // Replacing abrasive disc with plasma for boiler tube support replacement.
-// Study data (RPBC): 50 supports/shutdown, plasma = 60% time reduction.
+// Field study: 50 supports/shutdown, plasma = 60% time reduction.
 export function calcBoilerSupports(d) {
   const totalSupports = d.supportsPerShutdown * d.shutdownsPerYear;
   const discHours = (totalSupports * d.discTimePerSupport * d.numWorkers) / 60;
