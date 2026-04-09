@@ -5,6 +5,7 @@ import ApplicationSelector from "./components/ApplicationSelector";
 import CalculatorForms from "./components/CalculatorForms";
 import LoadingScreen from "./components/LoadingScreen";
 import ReportPage from "./components/ReportPage";
+import { generateSessionId, trackReachedReport } from "./lib/sessionTracker";
 
 export default function App() {
   const [lang, setLang] = useState("en");
@@ -12,6 +13,7 @@ export default function App() {
   const [step, setStep] = useState("landing");
   const [selectedApps, setSelectedApps] = useState([]);
   const [calcData, setCalcData] = useState({});
+  const [sessionId] = useState(() => generateSessionId());
 
   useEffect(() => {
     fetch("https://ipapi.co/json/")
@@ -48,12 +50,16 @@ export default function App() {
             />
           )}
           {step === "loading" && (
-            <LoadingScreen lang={lang} onDone={() => setStep("report")} />
+            <LoadingScreen lang={lang} onDone={() => {
+              trackReachedReport(sessionId, { apps: selectedApps, calcData, lang, unit });
+              setStep("report");
+            }} />
           )}
           {step === "report" && (
             <ReportPage
               apps={selectedApps}
               calcData={calcData}
+              sessionId={sessionId}
               onRestart={() => { setStep("landing"); setSelectedApps([]); setCalcData({}); }}
             />
           )}

@@ -5,6 +5,7 @@ import { INDUSTRY_DEFAULTS, APP_CALC_MAP } from "../lib/calculators";
 import Footer from "./Footer";
 import { generatePDF } from "./ReportPDF";
 import { saveLead } from "../lib/supabase";
+import { trackSentLead } from "../lib/sessionTracker";
 
 const APP_ICONS = {
   tankPlates: "🛢️",
@@ -174,7 +175,7 @@ function ResultCard({ appId, savings, timeSavings, totalSavings, data, result, l
   );
 }
 
-function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
+function EmailBanner({ lang, totalSavings, apps, calcData, unit, sessionId }) {
   const [visible, setVisible] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -199,6 +200,7 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
       recommended_process: apps.join(', '),
       payload: { role, refinery, country, totalSavings, apps, lang, unit },
     });
+    trackSentLead(sessionId);
     generatePDF({ apps, calcData, unit, lang, userInfo });
     setSubmitted(true);
   };
@@ -296,7 +298,7 @@ function EmailBanner({ lang, totalSavings, apps, calcData, unit }) {
   );
 }
 
-export default function ReportPage({ apps, calcData, onRestart }) {
+export default function ReportPage({ apps, calcData, sessionId, onRestart }) {
   const { lang, setLang } = useLanguage();
   const { unit, setUnit } = useUnit();
   const tr = t[lang];
@@ -363,7 +365,7 @@ export default function ReportPage({ apps, calcData, onRestart }) {
           </div>
         </div>
 
-        <EmailBanner lang={lang} totalSavings={totalSavings} apps={apps} calcData={calcData} unit={unit} />
+        <EmailBanner lang={lang} totalSavings={totalSavings} apps={apps} calcData={calcData} unit={unit} sessionId={sessionId} />
 
         <div style={{ marginBottom: "24px" }}>
           {apps.map((appId) => {
