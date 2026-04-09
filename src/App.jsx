@@ -6,6 +6,7 @@ import CalculatorForms from "./components/CalculatorForms";
 import LoadingScreen from "./components/LoadingScreen";
 import ReportPage from "./components/ReportPage";
 import { generateSessionId, trackReachedReport } from "./lib/sessionTracker";
+import ThemeToggle from "./components/ThemeToggle";
 
 export default function App() {
   const [lang, setLang] = useState("en");
@@ -30,6 +31,7 @@ export default function App() {
     <LanguageContext.Provider value={{ lang, setLang }}>
       <UnitContext.Provider value={{ unit, setUnit }}>
         <div className="app-root">
+          <ThemeToggle />
           {step === "landing" && (
             <LandingPage onStart={() => setStep("select")} />
           )}
